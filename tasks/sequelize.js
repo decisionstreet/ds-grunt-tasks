@@ -7,7 +7,7 @@ var moment = require('moment');
 module.exports = function (grunt) {
 
     grunt.registerTask('sequelize', 'Run Sequelize tasks', function(cmd, arg1) {
-        var done = this.async();
+        var done;
 
         var options = this.options({
             migrationsPath: './migrations',
@@ -25,10 +25,14 @@ module.exports = function (grunt) {
         var migrationName, migrationContent;
 
         if (cmd === 'migrate') {
+            done = this.async();
+
             migrator
                 .migrate({ method: 'up' })
                 .done(done);
         } else if (cmd === 'undo') {
+            done = this.async();
+
             // migrator.migrate({ method: 'down' }) doesn't work, though docs say it should
             // This is copy+pasted from the Sequelize source - it's magic.
             migrator.findOrCreateSequelizeMetaDAO().success(function(Meta) {
