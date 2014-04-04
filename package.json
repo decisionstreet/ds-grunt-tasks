@@ -2,7 +2,7 @@
   "name": "ds-grunt-tasks",
   "version": "0.0.1",
   "description": "The best Grunt plugin ever.",
-  "repository": "",
+  "repository": "https://github.com/decisionstreet/ds-grunt-tasks",
   "author": {
     "name": "DecisionStreet",
     "email": ""
