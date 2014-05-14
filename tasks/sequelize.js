@@ -29,25 +29,29 @@ module.exports = function (grunt) {
 
             migrator
                 .migrate({ method: 'up' })
-                .done(done);
+                .then(_.noop, function (err) {
+                    throw new Error(err);
+                })
+                .done(done, done);
         } else if (cmd === 'undo') {
             done = this.async();
 
             // migrator.migrate({ method: 'down' }) doesn't work, though docs say it should
-            // This is copy+pasted from the Sequelize source - it's magic.
-            migrator.findOrCreateSequelizeMetaDAO().success(function(Meta) {
-                Meta.find({ order: 'id DESC' }).success(function(meta) {
-                    if (meta) {
-                        migrator = sequelize.getMigrator(_.extend(migratorOptions, meta.values), true);
-                        migrator.migrate({ method: 'down' }).success(function() {
-                            done();
-                        });
-                    } else {
-                        grunt.log.writeln('There are no pending migrations.');
-                        done();
-                    }
-                });
-            });
+            // This is taken from the Sequelize source - it's magic.
+            migrator.findOrCreateSequelizeMetaDAO().then(function(Meta) {
+                return Meta.find({ order: 'id DESC' });
+            }).then(function (meta) {
+                if (meta) {
+                    migrator = sequelize.getMigrator(_.extend(migratorOptions, meta.values), true);
+                    return migrator.migrate({ method: 'down' });
+                } else {
+                    grunt.log.writeln('There are no pending migrations.');
+                }
+            }).then(_.noop, function (err) {
+                throw new Error(err);
+            })
+            .done(done, done);
+
         } else if (cmd === 'createMigration') {
             migrationName = [
                     moment().format('YYYYMMDDHHmmss'),
